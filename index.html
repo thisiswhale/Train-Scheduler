@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Train Scheduler</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <!-- gets Moment.js for time format -->
+<!--     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/locale/af.js"></script> -->
+</head>
+
+<body>
+    <div class="container">
+        <div class="jumbotron">
+            <h1 class="text-center">All aboard the PsuedoTrain</h1>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Train Schedule</h3>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Train Name</th>
+                                    <th>Destination</th>
+                                    <th>Frequency (min)</th>
+                                    <th>Next Arrival</th>
+                                    <th>Minutes Away</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td id="addName">Soul Train</td>
+                                    <td id="addDes">Groove</td>
+                                    <td id="addFreq">60</td>
+                                    <td id="addNextArr">Need Calculate</td>
+                                    <td id="addMinutesAway">need calculate</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Add Train</h3>
+                    </div>
+                    <div class="panel-body">
+                        <form>
+                            <div class="form-group">
+                                <label for="trainName">Train Name</label>
+                                <input type="name" class="form-control" id="inputName">
+                            </div>
+                            <div class="form-group">
+                                <label for="destination">Destination</label>
+                                <input type="destination" class="form-control" id="inputDestination">
+                            </div>
+                            <div class="form-group">
+                                <label for="firstTrainTime">First Train Time (hh:mm - military time)</label>
+                                <input type="firstTrain" class="form-control" id="inputFirstTrain">
+                            </div>
+                            <div class="form-group">
+                                <label for="Frequency">Frequency (min)</label>
+                                <input type="Frequency" class="form-control" id="inputFrequency">
+                            </div>
+                            <button type="submit" class="btn btn-default active" id="submitTrain">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/3.8.0/firebase.js"></script>
+    <script type="text/javascript">
+    // Initialize Firebase
+    var config = {
+        apiKey: "AIzaSyCCzXiPkssAue-rIOrjBySG9VqOGjwv4Dk",
+        authDomain: "train-scheduler-51d5a.firebaseapp.com",
+        databaseURL: "https://train-scheduler-51d5a.firebaseio.com",
+        projectId: "train-scheduler-51d5a",
+        storageBucket: "train-scheduler-51d5a.appspot.com",
+        messagingSenderId: "168560126909"
+    };
+    firebase.initializeApp(config);
+
+    //Create variable to reference the database
+    var database = firebase.database();
+    var trains = [];
+
+    //gets today time
+    var time = new Date();
+    var today = time.getHours() + ":" + time.getMinutes();
+    var todayMinutes = time.getMinutes();
+
+    $("#submitTrain").on("click", function() {
+        event.preventDefault();
+        var name = $("#inputName").val().trim();
+        var destination = $("#inputDestination").val().trim();
+        //Format hh:mm - military time, need to convert military time, ex: first train at 06:20
+        var firstTrain = $("#inputFirstTrain").val().trim();
+        var frequency = $("#inputFrequency").val().trim();
+
+        // $("#addName").html(name);
+        // $("#addDes").html(destination);
+        // $("#addFreq").html(frequency);
+        // $("#addNextArr").html(response.val().nextTrain);
+        // //$("#addMinutesAway").html(response.val().nextTrain);
+
+        var newTrain = {
+            name: name,
+            destination: destination,
+            firstTrain: firstTrain,
+            frequency: frequency
+        }
+
+        trains.push(newTrain);
+
+        //calls database and stores them
+        database.ref().set(trains);
+    });
+
+
+    database.ref().on("value", function(response) {
+
+        //log everything that's coming out of the response
+        var trainData = response.val();
+        console.log(trainData.length);
+        console.log(trainData);
+        for (var i = 0; i > trainData.length; i++) {
+            console.log(trainData[i].name);
+            console.log(trainData[i].destination);
+            //console.log(response.val().nextTrain);
+            console.log(trainData[i].frequency);
+
+            //Change the HTML to reflect
+            $("#addName").html(trainData[i].name);
+            $("#addDes").html(trainData[i].destination);
+            //$("#addNextArr").html(response.val().nextTrain);
+            $("#addFreq").html(trainData[i].frequency);
+            //$("#addMinutesAway").html(response.val().nextTrain);
+        }
+
+        // Create Error Handling
+    }, function(errorObject) {
+        console.log("The read failed: " + errorObject.code);
+    });
+    </script>
+</body>
+
+</html>
+<!--   * Code this app to calculate when the next train will arrive; this should be relative to the current time.
+
+  * Users from many different machines must be able to view same train times. -->

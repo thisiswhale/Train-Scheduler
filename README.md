@@ -4,3 +4,4 @@
   - JavaScript
   - jQuery
   - Bootstrap
+  - Firebase
